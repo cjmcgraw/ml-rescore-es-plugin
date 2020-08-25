@@ -1,0 +1,20 @@
+syntax = "proto3";
+
+option java_multiple_files = true;
+option java_package = "com.accretivetg";
+
+package recsys;
+
+service Recommender {
+    rpc recommend(RecommenderRequest) returns (RecommenderResponse) {}
+}
+
+message RecommenderRequest {
+    repeated int64 exampleids=1 [packed=true];
+    string context=2;
+}
+
+message RecommenderResponse {
+    repeated float outputs=1 [packed=true];
+}
+

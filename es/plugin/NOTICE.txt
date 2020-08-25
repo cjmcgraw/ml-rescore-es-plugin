@@ -1,0 +1,1 @@
+This plugin and project are released under MIT License. See License.txt

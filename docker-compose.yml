@@ -1,0 +1,22 @@
+version: "3.8"
+
+services:
+
+  grpc_server:
+    build: ./grpc_server
+    volumes:
+      - ./grpc_server:/app/
+    ports:
+      - 50051:50051
+  
+  es:
+    build:
+      dockerfile: ./es/Dockerfile
+      context: ./
+    environment:
+      discovery.type: single-node
+    ports:
+      - 9200:9200
+      - 9300:9300
+
+
