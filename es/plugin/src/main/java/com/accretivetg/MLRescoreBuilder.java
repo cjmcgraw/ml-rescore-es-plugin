@@ -1,6 +1,7 @@
 package com.accretivetg;
 
 import com.google.common.primitives.Floats;
+import com.google.protobuf.InvalidProtocolBufferException;
 import org.apache.lucene.search.Explanation;
 import org.apache.lucene.search.IndexSearcher;
 import org.apache.lucene.search.TopDocs;
@@ -105,24 +106,11 @@ public class MLRescoreBuilder extends RescorerBuilder<MLRescoreBuilder> {
         return modelContext;
     }
 
-    private static class MLRescoreContext extends RescoreContext {
-        private final RecommenderClient recommender;
-        private final String modelName;
-        private final String modelContext;
-
-        MLRescoreContext(int windowSize, String modelName, String modelContext) {
-            super(windowSize, MLRescorer.INSTANCE);
-            this.modelName = modelName;
-            this.recommender = RecommenderClient.buildRecommenderClient(modelName);
-            this.modelContext = modelContext;
-        }
-    }
-
     private static class MLRescorer implements Rescorer {
         private static final MLRescorer INSTANCE = new MLRescorer();
 
         @Override
-        public TopDocs rescore(TopDocs topDocs, IndexSearcher searcher, RescoreContext rescoreContext) {
+        public TopDocs rescore(TopDocs topDocs, IndexSearcher searcher, RescoreContext rescoreContext) throws InvalidProtocolBufferException {
             MLRescoreContext mlContext = (MLRescoreContext) rescoreContext;
 
             long[] exampleIds = Arrays.stream(topDocs.scoreDocs)
@@ -144,11 +132,25 @@ public class MLRescoreBuilder extends RescorerBuilder<MLRescoreBuilder> {
             return sourceExplanation;
         }
 
-        private float[] getRecommenderScores(long[] exampleIds, MLRescoreContext mlContext) {
+        private float[] getRecommenderScores(long[] exampleIds, MLRescoreContext mlContext) throws InvalidProtocolBufferException {
             return mlContext.recommender.score(
                     exampleIds,
                     mlContext.modelContext
             );
         }
     }
+
+    private static class MLRescoreContext extends RescoreContext {
+        private final RecommenderClient recommender;
+        private final String modelName;
+        private final String modelContext;
+
+        MLRescoreContext(int windowSize, String modelName, String modelContext) {
+            super(windowSize, MLRescorer.INSTANCE);
+            this.modelName = modelName;
+            this.recommender = RecommenderClient.buildRecommenderClient(modelName);
+            this.modelContext = modelContext;
+        }
+    }
+
 }

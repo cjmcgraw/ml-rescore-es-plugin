@@ -36,12 +36,11 @@ dependencies {
     compile "io.grpc:grpc-stub:${grpcVersion}"
     compile "com.google.protobuf:protobuf-java:${protobufVersion}"
     compile 'info.picocli:picocli:4.5.0'
-    compileOnly "org.apache.tomcat:annotations-api:6.0.53"
-    compile group: 'org.elasticsearch', name: 'elasticsearch', version: "${esVersion}"
-
-    implementation "com.google.protobuf:protobuf-java-util:${protobufVersion}"
-
-    runtimeOnly "io.grpc:grpc-netty-shaded:${grpcVersion}"
+    compile "org.apache.tomcat:annotations-api:6.0.53"
+    compile "org.elasticsearch:elasticsearch:${esVersion}"
+    compile "com.google.protobuf:protobuf-java-util:${protobufVersion}"
+    compile "io.grpc:grpc-netty-shaded:${grpcVersion}"
+    compile group: 'com.googlecode.protobuf-java-format', name: 'protobuf-java-format', version: '1.4'
 }
 
 protobuf {
@@ -70,9 +69,6 @@ esplugin {
     licenseFile rootProject.file("LICENSE.txt")
     noticeFile rootProject.file("NOTICE.txt")
 }
-
-checkstyle {
-    sourceSets = []
-}
-
-tasks.withType(Javadoc).all { enabled = false }
+checkstyleMain.onlyIf { false }
+checkstyleTest.onlyIf { false }
+javadoc.onlyIf { false }

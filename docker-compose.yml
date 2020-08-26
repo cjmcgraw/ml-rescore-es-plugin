@@ -2,7 +2,7 @@ version: "3.8"
 
 services:
 
-  grpc_server:
+  grpc-server:
     build: ./grpc_server
     volumes:
       - ./grpc_server:/app/
@@ -15,6 +15,8 @@ services:
       context: ./
     environment:
       discovery.type: single-node
+    volumes:
+      - ./es/plugin/build/distributions:/distributions
     ports:
       - 9200:9200
       - 9300:9300

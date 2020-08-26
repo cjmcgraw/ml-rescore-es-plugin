@@ -24,7 +24,7 @@ RUN ./gradlew \
 FROM elasticsearch:7.9.0
 RUN mkdir /ml-grpc-rescore-plugin/
 COPY --from=builder /build/build/distributions/ml-grpc-rescore.zip /ml-grpc-rescore-plugin/
-RUN bin/elasticsearch-plugin install file:///ml-grpc-rescore-plugin/ml-grpc-rescore.zip
+RUN yes | bin/elasticsearch-plugin install file:///ml-grpc-rescore-plugin/ml-grpc-rescore.zip
 ADD ./es/data.tar.gz /usr/share/elasticsearch/
 RUN chown -R elasticsearch /usr/share/elasticsearch/data
 RUN ls -alR /usr/share/elasticsearch/data
