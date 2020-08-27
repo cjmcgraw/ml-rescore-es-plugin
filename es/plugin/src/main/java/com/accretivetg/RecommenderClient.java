@@ -2,7 +2,6 @@ package com.accretivetg;
 
 import com.google.common.primitives.Floats;
 import com.google.common.primitives.Longs;
-import io.grpc.ManagedChannel;
 import io.grpc.ManagedChannelBuilder;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -13,10 +12,12 @@ import java.security.AccessController;
 import java.security.PrivilegedAction;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Random;
 
 public class RecommenderClient {
   private static final SecurityManager securityManager = RecommenderClient.getSecurityManager();
   private static final Logger log = LogManager.getLogger(RecommenderClient.class);
+  private static final Random rand = new Random(1L);
 
   private static final Map<String, RecommenderGrpc.RecommenderBlockingStub> clientMap = new HashMap<>();
 
@@ -27,24 +28,23 @@ public class RecommenderClient {
   }
 
   public static RecommenderClient buildRecommenderClient(String host) {
-    boolean shouldBuildConnection = !clientMap.containsKey(host);
-    if (!shouldBuildConnection) {
-      log.info("found existing connection for host: " + host);
-      RecommenderGrpc.RecommenderBlockingStub client = clientMap.get(host);
-      ManagedChannel channel = (ManagedChannel) client.getChannel();
-    } else {
-      log.info("Starting new connection with host: " + host);
-      ManagedChannel channel = ManagedChannelBuilder
-              .forTarget(host)
-              .usePlaintext()
-              .build();
+    String key = Math.abs(rand.nextInt() % 10) + "," + host;
+    log.info("searching for grpc client with key={} host={}", key, host);
+    RecommenderGrpc.RecommenderBlockingStub stub = clientMap
+            .computeIfAbsent(key,
+                    (k) -> {
+              log.info("unable to find current stub key={}", key);
+              log.info("setting up grpc connection");
+              return RecommenderGrpc.newBlockingStub(
+                      ManagedChannelBuilder
+                              .forTarget(host)
+                              .usePlaintext()
+                              .build()
+              );
+            }
+          );
 
-      RecommenderGrpc.RecommenderBlockingStub stub = RecommenderGrpc.newBlockingStub(channel);
-      log.info("finished setup for grpc client with host: " + host);
-      clientMap.put(host, stub);
-    }
-    log.info("found total hosts setup: " + clientMap.size());
-    return new RecommenderClient(clientMap.get(host));
+    return new RecommenderClient(stub);
   }
 
   private final RecommenderGrpc.RecommenderBlockingStub recommender;
@@ -70,7 +70,7 @@ public class RecommenderClient {
       }
     );
     long finishedTime = System.nanoTime();
-    log.info("grpc call finished in {}ns", finishedTime - startTime);
+    log.info("grpc call finished in {} ms", (finishedTime - startTime) / 1e6);
     return Floats.toArray(response.getOutputsList());
   }
 }
