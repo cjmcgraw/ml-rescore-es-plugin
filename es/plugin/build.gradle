@@ -32,6 +32,10 @@ repositories {
 
 
 dependencies {
+    configurations.all {
+        resolutionStrategy.force 'com.google.errorprone:error_prone_annotations:2.4.0'
+    }
+
     compile "io.grpc:grpc-protobuf:${grpcVersion}"
     compile "io.grpc:grpc-stub:${grpcVersion}"
     compile "com.google.protobuf:protobuf-java:${protobufVersion}"
@@ -41,6 +45,7 @@ dependencies {
     compile "com.google.protobuf:protobuf-java-util:${protobufVersion}"
     compile "io.grpc:grpc-netty-shaded:${grpcVersion}"
     compile group: 'com.googlecode.protobuf-java-format', name: 'protobuf-java-format', version: '1.4'
+    compile 'com.github.ben-manes.caffeine:caffeine:2.8.5'
 }
 
 protobuf {

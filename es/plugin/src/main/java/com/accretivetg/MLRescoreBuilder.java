@@ -2,9 +2,12 @@ package com.accretivetg;
 
 import com.google.common.primitives.Floats;
 import com.google.protobuf.InvalidProtocolBufferException;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.apache.lucene.search.Explanation;
 import org.apache.lucene.search.IndexSearcher;
 import org.apache.lucene.search.TopDocs;
+import org.elasticsearch.ElasticsearchException;
 import org.elasticsearch.common.ParseField;
 import org.elasticsearch.common.io.stream.StreamInput;
 import org.elasticsearch.common.io.stream.StreamOutput;
@@ -19,6 +22,7 @@ import org.elasticsearch.search.rescore.RescorerBuilder;
 
 import java.io.IOException;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.Comparator;
 import java.util.Objects;
 
@@ -26,6 +30,7 @@ import static java.util.Collections.singletonList;
 import static org.elasticsearch.common.xcontent.ConstructingObjectParser.constructorArg;
 
 public class MLRescoreBuilder extends RescorerBuilder<MLRescoreBuilder> {
+    private static final Logger log = LogManager.getLogger(MLRescoreBuilder.class);
     public static final String NAME = "mlrescore";
 
     private final String modelName;
@@ -110,7 +115,7 @@ public class MLRescoreBuilder extends RescorerBuilder<MLRescoreBuilder> {
         private static final MLRescorer INSTANCE = new MLRescorer();
 
         @Override
-        public TopDocs rescore(TopDocs topDocs, IndexSearcher searcher, RescoreContext rescoreContext) throws InvalidProtocolBufferException {
+        public TopDocs rescore(TopDocs topDocs, IndexSearcher searcher, RescoreContext rescoreContext) {
             MLRescoreContext mlContext = (MLRescoreContext) rescoreContext;
 
             long[] exampleIds = Arrays.stream(topDocs.scoreDocs)
@@ -123,16 +128,16 @@ public class MLRescoreBuilder extends RescorerBuilder<MLRescoreBuilder> {
                 topDocs.scoreDocs[i].score = scores[i];
             }
 
-            Arrays.sort(topDocs.scoreDocs, (a, b) -> Floats.compare(a.score, b.score));
+            Arrays.sort(topDocs.scoreDocs, Collections.reverseOrder((a, b) -> Floats.compare(a.score, b.score)));
             return topDocs;
         }
 
         @Override
-        public Explanation explain(int topLevelDocId, IndexSearcher searcher, RescoreContext rescoreContext, Explanation sourceExplanation){
+        public Explanation explain(int topLevelDocId, IndexSearcher searcher, RescoreContext rescoreContext, Explanation sourceExplanation) {
             return sourceExplanation;
         }
 
-        private float[] getRecommenderScores(long[] exampleIds, MLRescoreContext mlContext) throws InvalidProtocolBufferException {
+        private float[] getRecommenderScores(long[] exampleIds, MLRescoreContext mlContext) {
             return mlContext.recommender.score(
                     exampleIds,
                     mlContext.modelContext
@@ -152,5 +157,4 @@ public class MLRescoreBuilder extends RescorerBuilder<MLRescoreBuilder> {
             this.modelContext = modelContext;
         }
     }
-
 }
