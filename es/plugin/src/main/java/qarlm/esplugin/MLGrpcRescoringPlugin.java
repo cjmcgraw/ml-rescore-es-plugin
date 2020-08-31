@@ -1,4 +1,4 @@
-package com.accretivetg;
+package qarlm.esplugin;
 
 import org.elasticsearch.plugins.Plugin;
 import java.util.List;

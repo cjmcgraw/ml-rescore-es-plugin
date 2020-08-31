@@ -1,7 +1,6 @@
-package com.accretivetg;
+package qarlm.esplugin;
 
 import com.google.common.collect.Lists;
-import io.grpc.CallOptions;
 import io.grpc.ManagedChannel;
 import io.grpc.ManagedChannelBuilder;
 import org.apache.logging.log4j.LogManager;
@@ -10,48 +9,75 @@ import org.elasticsearch.ElasticsearchException;
 import org.elasticsearch.common.cache.Cache;
 import org.elasticsearch.common.cache.CacheBuilder;
 import org.elasticsearch.common.unit.TimeValue;
+import qarlm.RecommenderGrpc;
+import qarlm.RecommenderRequest;
+import qarlm.RecommenderResponse;
 
 
 import java.security.AccessController;
 import java.security.PrivilegedAction;
+import java.util.LinkedHashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.concurrent.*;
+import java.util.function.Function;
 
 public class RecommenderClient {
   private static final Logger log = LogManager.getLogger(RecommenderClient.class);
+  private static final Executor channelThreadPool = Executors.newCachedThreadPool();
+  private static final Executor rpcThreadPool = Executors.newCachedThreadPool();
   private static final Cache<String, Float> scoreCache = CacheBuilder
           .<String, Float>builder()
           .setMaximumWeight(2_000_000)
+          .setExpireAfterAccess(TimeValue.timeValueSeconds(10))
           .build();
 
-  private static RecommenderGrpc.RecommenderBlockingStub recommender;
-  private static ManagedChannel channel;
-
   public static RecommenderClient buildRecommenderClient(String host) {
-      boolean needsToCreateGrpcConnection = (
-              channel == null ||
-              recommender == null ||
-              channel.isShutdown() ||
-              channel.isTerminated()
-      );
+      log.warn("establishing new rcp client with host: {}", host);
+      ManagedChannel channel = ManagedChannelBuilder
+              .forTarget(host)
+              .usePlaintext()
+              .executor(channelThreadPool)
+              .build();
 
-      if (needsToCreateGrpcConnection) {
-          log.info("setting up grpc connection host=" + host);
-          channel = ManagedChannelBuilder
-                  .forTarget(host)
-                  .usePlaintext()
-                  .executor(Executors.newCachedThreadPool())
-                  .build();
-          recommender = RecommenderGrpc
-                  .newBlockingStub(channel)
-                  .withWaitForReady()
-                  .withExecutor(Executors.newCachedThreadPool());
-      } else {
-          log.info("using previously configured grpc connection to host=" + host);
-      }
-    return new RecommenderClient();
+
+      RecommenderGrpc.RecommenderBlockingStub stub = RecommenderGrpc
+              .newBlockingStub(channel)
+              .withExecutor(rpcThreadPool);
+
+      log.warn("warming up recommender with simple request!");
+      long startTime = System.nanoTime();
+      AccessController.doPrivileged(
+              (PrivilegedAction<Void>) () -> {
+                  stub.recommend(RecommenderRequest
+                          .newBuilder()
+                          .setContext("test_request")
+                          .build()
+                  );
+                  return null;
+              }
+      );
+      long endTime = System.nanoTime();
+      log.info("recommender initial gRPC reques took {} ms", (endTime - startTime) / 1e6);
+
+    return new RecommenderClient(stub);
   }
-  private RecommenderClient() {}
+
+  private final RecommenderGrpc.RecommenderBlockingStub stub;
+  private final ManagedChannel channel;
+
+  private RecommenderClient(RecommenderGrpc.RecommenderBlockingStub stub) {
+      this.channel = (ManagedChannel) stub.getChannel();
+      this.stub = stub;
+  }
+
+  private boolean isInvalid() {
+      return stub == null || channel == null || channel.isShutdown() || channel.isTerminated();
+  }
+
+  private void shutdown() {
+      channel.shutdown();
+  }
 
   public float[] score(long[] exampleIds, String context) {
       long startTime = System.nanoTime();
@@ -85,13 +111,12 @@ public class RecommenderClient {
           RecommenderResponse response;
           try {
               response = AccessController.doPrivileged(
-                      (PrivilegedAction<RecommenderResponse>) () -> recommender
-                              .withDeadlineAfter(250, TimeUnit.MILLISECONDS)
+                      (PrivilegedAction<RecommenderResponse>) () -> stub
+                              .withDeadlineAfter(50, TimeUnit.MILLISECONDS)
                               .recommend(request)
               );
           } catch (Exception e) {
               log.error(e);
-              channel.shutdown();
               throw new ElasticsearchException(e);
           }
 

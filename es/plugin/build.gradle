@@ -70,7 +70,7 @@ sourceSets {
 esplugin {
     name 'ml-grpc-rescore'
     description 'Rescoring plugin for external grpc model'
-    classname 'com.accretivetg.MLGrpcRescoringPlugin'
+    classname 'qarlm.esplugin.MLGrpcRescoringPlugin'
     licenseFile rootProject.file("LICENSE.txt")
     noticeFile rootProject.file("NOTICE.txt")
 }

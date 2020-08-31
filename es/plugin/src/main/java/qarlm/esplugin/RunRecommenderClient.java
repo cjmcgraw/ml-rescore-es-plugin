@@ -1,8 +1,7 @@
-package com.accretivetg;
+package qarlm.esplugin;
 
 import picocli.CommandLine;
 
-import java.util.List;
 import java.util.concurrent.Callable;
 
 @CommandLine.Command(name="RecommenderClient")
