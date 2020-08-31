@@ -19,8 +19,8 @@ DESCRIPTOR = _descriptor.FileDescriptor(
   name='recsys.proto',
   package='recsys',
   syntax='proto3',
-  serialized_options=None,
-  serialized_pb=_b('\n\x0crecsys.proto\x12\x06recsys\"=\n\x12RecommenderRequest\x12\x16\n\nexampleids\x18\x01 \x03(\x03\x42\x02\x10\x01\x12\x0f\n\x07\x63ontext\x18\x02 \x01(\t\"*\n\x13RecommenderResponse\x12\x13\n\x07outputs\x18\x01 \x03(\x02\x42\x02\x10\x01\x32U\n\x0bRecommender\x12\x46\n\trecommend\x12\x1a.recsys.RecommenderRequest\x1a\x1b.recsys.RecommenderResponse\"\x00\x62\x06proto3')
+  serialized_options=_b('\n\005qarlmP\001'),
+  serialized_pb=_b('\n\x0crecsys.proto\x12\x06recsys\"=\n\x12RecommenderRequest\x12\x16\n\nexampleids\x18\x01 \x03(\x03\x42\x02\x10\x01\x12\x0f\n\x07\x63ontext\x18\x02 \x01(\t\"*\n\x13RecommenderResponse\x12\x13\n\x07outputs\x18\x01 \x03(\x02\x42\x02\x10\x01\x32U\n\x0bRecommender\x12\x46\n\trecommend\x12\x1a.recsys.RecommenderRequest\x1a\x1b.recsys.RecommenderResponse\"\x00\x42\t\n\x05qarlmP\x01\x62\x06proto3')
 )
 
 
@@ -113,6 +113,7 @@ RecommenderResponse = _reflection.GeneratedProtocolMessageType('RecommenderRespo
 _sym_db.RegisterMessage(RecommenderResponse)
 
 
+DESCRIPTOR._options = None
 _RECOMMENDERREQUEST.fields_by_name['exampleids']._options = None
 _RECOMMENDERRESPONSE.fields_by_name['outputs']._options = None
 
