@@ -12,9 +12,4 @@ docker run \
 cp protos/*.py grpc_server
 rm -rf protos/*.py
 
-docker run \
-    --rm \
-    -v "${HOST_MOUNT_VOLUME_PATH}/protos:/protos" \
-    qarlm/protoc:latest \
-    --working-dir /protos \
-    --language java
+cp protos/*.proto es/plugin/src/main/proto/
