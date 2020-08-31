@@ -46,11 +46,9 @@ volatile documents using state of the art Machine Learning technology?
 
 The answer. This plugin! 
 
-The purpose of this plugin is relatively simple. 
-
-We want to rescore every document, against a known user context. Adding the user
-documents score into the elasticsearch score, then finally sorting by the aggregation of
-the two. 
+tl;dr: The purpose of this plugin is relatively simple.  We want to rescore every 
+document, against a known user context. Adding the user documents score into the 
+elasticsearch score, then finally sorting by the aggregation of the two. 
 
 ## How does it work?
 
