@@ -2,23 +2,6 @@
 
 This is an Elasticsearch [rescore](https://www.elastic.co/guide/en/elasticsearch/reference/7.9//filter-search-results.html#rescore) [plugin](https://www.elastic.co/guide/en/elasticsearch/reference/current/modules-plugins.html). The purpose of this plugin is to allow an external model to dyanmically score documents in real time, in a hyper critical production system, where the underlying machine learning model changes rapidly , and the documents are extremely volatile in state.
 
-## Getting Started
-
-To install this plugin you can build the zip using gradlew inside of the plugin directory:
-
-```
-./proto_gen.sh && ./es/plugin/gradlew assemble
-```
-
-This will create a zip file that can be uploaded and manually installed to your
-Elasticsearch instances in production.
-
-```
-/usr/share/elasticsearch/install-plugin install ./distributions/ml-grpc-rescore.zip
-```
-
-After a server restart of Elasticsearch the plugin should be hot and ready to go
-
 ## But why?
 
 The first question I always ask myself when I see a github repo like this. Why? What
@@ -104,3 +87,51 @@ cache and gRPC pool.
 the gRPC model is served externally to the ES cluster, but ideally co-located close
 enough to allow for fast connections. The LRU cache can be tuned with increased
 weight/size for best effect.
+
+
+## Getting Started
+
+To install this plugin you can build the zip using gradlew inside of the plugin directory:
+
+```
+./proto_gen.sh && ./es/plugin/gradlew assemble
+```
+
+This will create a zip file that can be uploaded and manually installed to your
+Elasticsearch instances in production.
+
+```
+/usr/share/elasticsearch/install-plugin install ./distributions/ml-grpc-rescore.zip
+```
+
+After a server restart of Elasticsearch the plugin should be hot and ready to go
+
+## Developing Locally
+
+To develop locally with this project I highly recommend using docker-compose for all
+development needs.
+
+First you'll need to run the `proto_gen.sh` script, because this isn't easily automated
+in docker containers. The only dependency needed for this should be docker!
+
+```
+$ ./gen_proto.sh
+```
+
+Doing that we see that there are some proto and pb files generated:
+
+```
+│               └── ./es/plugin/src/main/proto
+│                   └── ./es/plugin/src/main/proto/recsys.proto
+│   ├── ./grpc_server/recsys_pb2.py
+```
+These are generally needed for the project to work!
+
+Then up all the containers:
+
+```
+docker-compose up
+```
+
+You'll have an instance of a grpc-server and elasticsearch with the plugin installed.
+
