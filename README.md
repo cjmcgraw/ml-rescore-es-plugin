@@ -7,7 +7,7 @@ This is an Elasticsearch [rescore](https://www.elastic.co/guide/en/elasticsearch
 To install this plugin you can build the zip using gradlew inside of the plugin directory:
 
 ```
-./es/plugin/gradlew assemble
+./proto_gen.sh && ./es/plugin/gradlew assemble
 ```
 
 This will create a zip file that can be uploaded and manually installed to your
@@ -27,7 +27,7 @@ sometimes like to include a section here to describe the problem, and how this
 repository solves it.
 
 As I write this I am the original author of our recommender system, and content
-discovery/serving mechanisms at (Accretive Technology Group)[https://accretivetg.com/].
+discovery/serving mechanisms at [Accretive Technology Group](https://accretivetg.com/).
 Our goal is to serve hundreds of millions of daily users, with the best recommendations
 for approximately 1 million documents. But there are a few wrinkles. I will enumerate
 them briefly:
