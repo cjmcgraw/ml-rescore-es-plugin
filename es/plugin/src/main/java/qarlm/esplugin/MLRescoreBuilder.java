@@ -69,7 +69,7 @@ public class MLRescoreBuilder extends RescorerBuilder<MLRescoreBuilder> {
     }
 
     @Override
-    public RescorerBuilder<MLRescoreBuilder> rewrite(QueryRewriteContext ctx) throws IOException {
+    public RescorerBuilder<MLRescoreBuilder> rewrite(QueryRewriteContext ctx) {
         return this;
     }
 
