@@ -1,6 +1,6 @@
 # Elasticsearch Plugin: ml-grpc-rescore
 
-This is an Elasticsearch [rescore](https://www.elastic.co/guide/en/elasticsearch/reference/7.9//filter-search-results.html#rescore) [plugin](https://www.elastic.co/guide/en/elasticsearch/reference/current/modules-plugins.html). The purpose of this plugin is to allow an external model to dyanmically score documents in real time, in a hyper critical production system, where the underlying machine learning model changes rapidly , and the documents are extremely volatile in state.
+This is an Elasticsearch [rescore](https://www.elastic.co/guide/en/elasticsearch/reference/7.9//filter-search-results.html#rescore) [plugin](https://www.elastic.co/guide/en/elasticsearch/reference/current/modules-plugins.html). The purpose of this plugin is to allow an external model to dyanmically score documents in real time, in a hyper critical production system, where the underlying machine learning model changes rapidly, and the documents are extremely volatile in state.
 
 ## But why?
 
