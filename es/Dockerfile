@@ -12,7 +12,7 @@ COPY ./es/plugin/gradlew gradlew
 COPY ./es/plugin/build.gradle build.gradle
 COPY ./es/plugin/settings.gradle settings.gradle
 COPY ./es/plugin/src src/
-RUN unlink src/main/proto
+RUN unlink src/main/proto || echo "no unlink needed"
 COPY ./protos/ src/main/proto/
 RUN ls -alR src/
 

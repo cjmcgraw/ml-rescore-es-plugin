@@ -13,7 +13,7 @@ import recsys_pb2_grpc
 class Recommender(recsys_pb2_grpc.RecommenderServicer):
     async def recommend(self, request, context):
         log.info(f"inbound request: {MessageToJson(request)}")
-        scores = [random() for _ in request.exampleids]
+        scores = [(1.0 - (1.0 / (_id + 1.0))) for _id in request.exampleids]
         response = recsys_pb2.RecommenderResponse(outputs=scores)
         log.info(f"outbound response: {MessageToJson(response)}")
         return response

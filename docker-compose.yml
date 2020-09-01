@@ -23,4 +23,8 @@ services:
     depends_on:
       - grpc-server
 
+  tests:
+    build: ./tests
+    volumes:
+      - ./tests:/app/
 
