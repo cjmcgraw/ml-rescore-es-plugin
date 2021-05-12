@@ -30,7 +30,7 @@ import java.util.stream.IntStream;
 
 public class MLRescorerBuilder extends RescorerBuilder<MLRescorerBuilder>{
     private static final Logger log = LogManager.getLogger(MLRescorerBuilder.class);
-    public static final String NAME = "ml-rescore-v0";
+    public static final String NAME = "mlrescore-v1";
 
     private final String type;
     private final String name;

@@ -65,7 +65,7 @@ $ http POST "${es_host}:9200/${index}/_search" <<< \
             "query": {...}, 
             "rescore": { 
                 "window_size": 100, 
-                "ml-rescore-v0": {
+                "mlrescore-v1": {
                     "type": "ranking"
                     "name": "half_plus_two", 
                     "domain": "half-plus-two:8500",
@@ -123,7 +123,7 @@ $ http POST 'localhost:9200/es-ml-rescore-plugin-test-index/_search' <<< \
             "query": {"wildcard": {"name": "a*"}}, 
             "rescore": { 
                 "window_size": 800, 
-                "ml-rescore-v0": {
+                "mlrescore-v1": {
                     "score_mode": "replace",
                     "type": "ranking",
                     "name": "item_id_half_plus_two", 

@@ -1,6 +1,6 @@
 #! /usr/bin/env bash
 test_data_file="test_documents.newline-delimited-json"
-index="es-ml-rescore-plugin-test-index"
+index="test-index"
 force_generate=""
 fill_index=""
 only_run="*"
@@ -111,7 +111,7 @@ echo ""
 
 if  [[ -z "${fill_index}" ]]; then
     echo "checking if expected index exists!"
-    index_exists=$(curl --fail --silent "${es_host}:9200/_cat/indices" | grep "${index}")
+    index_exists=$(curl --fail --silent "${es_host}:9200/${index}")
     if [[ -z "${index_exists}" ]]; then
         echo "no index found. Toggling an index fill"
         fill_index="true"

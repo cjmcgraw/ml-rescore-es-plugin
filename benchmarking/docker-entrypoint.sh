@@ -58,7 +58,7 @@ done
 echo ""
 
 echo "deleteing benchmarking index, if it exists"
-curl --silent -XDELETE 'es:9200/benchmarking-test-index' > /dev/null
+curl --silent -XDELETE 'es:9200/benchmarking-index' > /dev/null
 echo "ignore above errors if they occurred"
 echo ""
 echo "generating data to submit"
@@ -66,7 +66,7 @@ python generate_data.py
 echo "finished generating benchmarking data"
 echo ""
 echo "filling up ES server with data"
-curl --fail --silent -XPOST "${es_host}:9200/benchmarking-test-index/_bulk" \
+curl --fail --silent -XPOST "${es_host}:9200/benchmarking-index/_bulk" \
     -H "Content-Type: application/x-ndjson" \
     --data-binary @benchmarking_documents.newline-delimited-json > /dev/null
 
@@ -75,11 +75,23 @@ echo "generating urls.txt for siege"
 python generate_urls.py
 echo "finished generating urls"
 
-echo "running server siege on half-plus-two-model"
+echo "running server siege on half-plus-two-model with unique requests"
 siege \
     --content-type application/json \
-    --concurrent 50 \
+    --concurrent 15 \
     --file urls.txt \
     --internet \
     --benchmark \
-    --time 2m
+    --reps=once \
+    $@
+
+
+echo "running server siege on half-plus-two-model with cached requests"
+siege \
+    --content-type application/json \
+    --concurrent 15 \
+    --file urls.txt \
+    --internet \
+    --benchmark \
+    --reps=once \
+    $@

@@ -29,7 +29,7 @@ if __name__ == '__main__':
                     "query": {"wildcard": {"name": f"{v}*"}},
                     "rescore": {
                         "window_size": 600,
-                        "ml-rescore-v0": {
+                        "mlrescore-v1": {
                             "score_mode": "replace",
                             "type": "ranking",
                             "name": "item_id_half_plus_three",

@@ -54,7 +54,6 @@ public class LRUCacheWrappedRanker implements MLModel {
     public Map<Long, Float> getScores(MLRescoreContext context, List<Long> itemIds) {
         StatsD statsd = getStatsd();
         String contextHash = getContextHash(context);
-        log.debug("using session hash = {}", contextHash);
 
         Map<Long, Float> scores = Maps.newHashMapWithExpectedSize(itemIds.size());
         List<Long> itemsThatNeedScoring = Lists.newArrayListWithCapacity(itemIds.size());

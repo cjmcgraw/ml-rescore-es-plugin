@@ -27,9 +27,9 @@ RUN --mount=type=cache,id=gradle_cache,target=/root/.gradle \
 RUN ls -al /build/build/distributions/
 
 FROM scratch as plugin_files
-COPY --from=builder /build/build/distributions/ml-rescore-v0.zip /ml-rescore-v0.zip
+COPY --from=builder /build/build/distributions/mlrescore-v1.zip /mlrescore-v1.zip
 
 FROM elasticsearch:7.9.0
 RUN mkdir /ml-grcp-rescoring-esplugin/
-COPY --from=builder /build/build/distributions/ml-rescore-v0.zip /ml-rescoring-esplugin/
-RUN yes | bin/elasticsearch-plugin install file:///ml-rescoring-esplugin/ml-rescore-v0.zip
+COPY --from=builder /build/build/distributions/mlrescore-v1.zip /ml-rescoring-esplugin/
+RUN yes | bin/elasticsearch-plugin install file:///ml-rescoring-esplugin/mlrescore-v1.zip
