@@ -113,7 +113,7 @@ You'll see a bit of chatter from the tests. But that is fine, as long as they ex
 
 After these tests have finished you'll see you have an index up with documents in it. 
 
-![](./wiki/.assets/post-tests-cat-indices.png)
+![post-tests-cat-indices.png](./.wiki/.assets/post-tests-cat-indices.png)
 
 Now you can run the above query provided. I highly recommend trying this query using [httpie](https://httpie.io/) and seeing if its successful:
 
@@ -145,10 +145,10 @@ This is an example of what a model can do. This system works with any elasticsea
 
 Please refer to wiki for usage, and how to easily change to fit your use case:
 
-* [getting started](./wiki/0000-getting-started.md)
-* [running locally](./wiki/0001-running-locally.md)
-* [implementing your own model](./wiki/0002-implementing-your-own-model.md)
-* [ranking vs retrieval](./wiki/0003-ranking-vs-retrieval.md)
-* [how to monitor in production](./wiki/0004-how-to-monitor.md)
-* [how to tune lru cache](./wiki/0005-how-to-tune-lru-cache.md)
+* [getting started](./.wiki/0000-getting-started.md)
+* [running locally](./.wiki/0001-running-locally.md)
+* [implementing your own model](./.wiki/0002-implementing-your-own-model.md)
+* [ranking vs retrieval](./.wiki/0003-ranking-vs-retrieval.md)
+* [how to monitor in production](./.wiki/0004-how-to-monitor.md)
+* [how to tune lru cache](./.wiki/0005-how-to-tune-lru-cache.md)
 
