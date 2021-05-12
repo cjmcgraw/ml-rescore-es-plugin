@@ -124,9 +124,10 @@ $ http POST 'localhost:9200/es-ml-rescore-plugin-test-index/_search' <<< \
             "rescore": { 
                 "window_size": 800, 
                 "ml-rescore-v0": {
+                    "score_mode": "replace",
                     "type": "ranking",
-                    "name": "half_plus_two", 
-                    "domain": "half-plus-two:8500",
+                    "name": "item_id_half_plus_two", 
+                    "domain": "half-plus-two-model:8500",
                     "itemid_field": "itemId1",
                     "context": {
                         "some-key": ["some-value"], 
