@@ -104,7 +104,7 @@ After your environment is ready it should be trivial.
 I personally think running the tests is the easiest way to get started on this project. The tests will pass, and after they do you have an elasticsearch container with two potential rescores you can run:
 
 ```
-docker-compose run tests
+$ docker-compose run tests
 ```
 
 These tests will build the plugin, install it to the local ES server running in docker. It will up two tensorflow models defined for the testing cases (and are used as templates for your own models). Then it will fill the index with test documents, and ensure that all requests act as expected.
@@ -124,7 +124,7 @@ $ http POST 'localhost:9200/es-ml-rescore-plugin-test-index/_search' <<< \
             "rescore": { 
                 "window_size": 800, 
                 "ml-rescore-v0": {
-                    "type": "ranking"
+                    "type": "ranking",
                     "name": "half_plus_two", 
                     "domain": "half-plus-two:8500",
                     "itemid_field": "itemId1",
