@@ -7,3 +7,4 @@ grpc_server/venv
 **/.gradle
 **/.venv
 **/.virtualenv
+**/*.swp
