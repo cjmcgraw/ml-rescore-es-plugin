@@ -83,7 +83,7 @@ Here is the definition of the parameters:
 
 * `type` - the type of model. Generally `ranking` vs `retrieval`
 * `name` - the name of the model. This is from the class you've implemented in the plugin
-* `domain` - the `domain:port` that the model is available on. Currently only `TensorflowServing` models are implemente
+* `domain` - the `domain:port` that the model is available on.
 * `itemid_field` - the field to use as the unique identifier for each item, this should be present in each document
 * `context` - the context for the query. Including all meaningful fields you care about
 
@@ -94,6 +94,52 @@ cache and gRPC pool.
 the gRPC model is served externally to the ES cluster, but ideally co-located close
 enough to allow for fast connections. The LRU cache can be tuned with increased
 weight/size for best effect.
+
+## Quickstart
+
+You can try this project out with relative ease. It assumes you have `docker-compose` available with `docker buildkit` active as well. So please [install docker-compose](https://docs.docker.com/compose/install/) and configure [docker buildkit with it](https://docs.docker.com/develop/develop-images/build_enhancements/).
+
+After your environment is ready it should be trivial.
+
+I personally think running the tests is the easiest way to get started on this project. The tests will pass, and after they do you have an elasticsearch container with two potential rescores you can run:
+
+```
+docker-compose run tests
+```
+
+These tests will build the plugin, install it to the local ES server running in docker. It will up two tensorflow models defined for the testing cases (and are used as templates for your own models). Then it will fill the index with test documents, and ensure that all requests act as expected.
+
+You'll see a bit of chatter from the tests. But that is fine, as long as they exit successfully!
+
+After these tests have finished you'll see you have an index up with documents in it. 
+
+![](./wiki/.assets/post-tests-cat-indices.png)
+
+Now you can run the above query provided. I highly recommend trying this query using [httpie](https://httpie.io/) and seeing if its successful:
+
+```
+$ http POST 'localhost:9200/es-ml-rescore-plugin-test-index/_search' <<< \
+        '{
+            "query": {"wildcard": {"name": "a*"}}, 
+            "rescore": { 
+                "window_size": 800, 
+                "ml-rescore-v0": {
+                    "type": "ranking"
+                    "name": "half_plus_two", 
+                    "domain": "half-plus-two:8500",
+                    "itemid_field": "itemId1",
+                    "context": {
+                        "some-key": "some-value", 
+                        "another-key": "another-value"
+                    }
+                }
+            }
+        }'
+```
+
+You should see all documents whose names start with "a", and they will have been rescored by the model so that they are boosted by the machine learning model specified. In this case the model took the `itemId1` field and boosted each document by `(itemId / 2) + 2`.
+
+This is an example of what a model can do. This system works with any elasticsearch query and allows you flexibility in merging document ES scores with ML scores through different methodologies!
 
 ## Wiki: 
 
