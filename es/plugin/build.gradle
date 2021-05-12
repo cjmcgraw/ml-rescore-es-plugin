@@ -59,7 +59,7 @@ dependencies {
 }
 
 esplugin {
-    name 'ml-rescore-v0'
+    name 'mlrescore-v1'
     description 'Rescoring plugin for external grpc model'
     classname 'carlm.esplugin.MLRescoringPlugin'
     licenseFile rootProject.file("LICENSE.txt")

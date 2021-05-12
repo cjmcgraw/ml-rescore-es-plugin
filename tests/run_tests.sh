@@ -153,7 +153,7 @@ if [[ ! -z "$fill_index" ]]; then
     curl --silent --fail \
         "${es_host}:9200/${index}/_bulk" \
         -H "Content-Type: application/x-ndjson" \
-        --data-binary @${test_data_file} > /dev/null > /dev/null
+        --data-binary @${test_data_file} > /dev/null
     echo "finished filling index"
     echo "waiting while documents refresh in index=${index}"
     sleep 15
