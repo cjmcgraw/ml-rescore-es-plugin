@@ -60,23 +60,32 @@ allow for dynamic machine learning model scoring.
 First you need to run your query against es:
 
 ```
-$ http POST 'localhost:9200/example-data/_search' <<< \
+$ http POST "${es_host}:9200/${index}/_search" <<< \
         '{
             "query": {...}, 
             "rescore": { 
                 "window_size": 100, 
-                "mlrescore": {
-                    "model_name": "grpc-server:50051", 
-                    "context": "my-context", 
+                "ml-rescore-v0": {
+                    "type": "ranking"
+                    "name": "half_plus_two", 
+                    "domain": "half-plus-two:8500",
+                    "itemid_field": "itemId1",
+                    "context": {
+                        "some-key": "some-value", 
+                        "another-key": "another-value"
+                    }
                 }
             }
         }'
 ```
 
-Providing the `model_name` as a `domain:port` for a grpc connection the plugin will
-establish a bridge and LRU cache. It will score the topN documents from the query as
-quickly as it can from the grpc model, and store their scores in an inmemory LRU cache
-managed by elasticsearch.
+Here is the definition of the parameters:
+
+* `type` - the type of model. Generally `ranking` vs `retrieval`
+* `name` - the name of the model. This is from the class you've implemented in the plugin
+* `domain` - the `domain:port` that the model is available on. Currently only `TensorflowServing` models are implemente
+* `itemid_field` - the field to use as the unique identifier for each item, this should be present in each document
+* `context` - the context for the query. Including all meaningful fields you care about
 
 ES will run the rescore during the collection phase, after the scoring phase before
 returning to the master node for sorting. This allows each shard to run their own LRU
@@ -86,50 +95,14 @@ the gRPC model is served externally to the ES cluster, but ideally co-located cl
 enough to allow for fast connections. The LRU cache can be tuned with increased
 weight/size for best effect.
 
+## Wiki: 
 
-## Getting Started
+Please refer to wiki for usage, and how to easily change to fit your use case:
 
-To install this plugin you can build the zip using gradlew inside of the plugin directory:
-
-```
-./proto_gen.sh && ./es/plugin/gradlew assemble
-```
-
-This will create a zip file that can be uploaded and manually installed to your
-Elasticsearch instances in production.
-
-```
-/usr/share/elasticsearch/install-plugin install ./distributions/ml-grpc-rescore.zip
-```
-
-After a server restart of Elasticsearch the plugin should be hot and ready to go
-
-## Developing Locally
-
-To develop locally with this project I highly recommend using docker-compose for all
-development needs.
-
-First you'll need to run the `proto_gen.sh` script, because this isn't easily automated
-in docker containers. The only dependency needed for this should be docker!
-
-```
-$ ./gen_proto.sh
-```
-
-Doing that we see that there are some proto and pb files generated:
-
-```
-│               └── ./es/plugin/src/main/proto
-│                   └── ./es/plugin/src/main/proto/recsys.proto
-│   ├── ./grpc_server/recsys_pb2.py
-```
-These are generally needed for the project to work!
-
-Then up all the containers:
-
-```
-docker-compose up
-```
-
-You'll have an instance of a grpc-server and elasticsearch with the plugin installed.
+* [getting started](./wiki/0000-getting-started.md)
+* [running locally](./wiki/0001-running-locally.md)
+* [implementing your own model](./wiki/0002-implementing-your-own-model.md)
+* [ranking vs retrieval](./wiki/0003-ranking-vs-retrieval.md)
+* [how to monitor in production](./wiki/0004-how-to-monitor.md)
+* [how to tune lru cache](./wiki/0005-how-to-tune-lru-cache.md)
 
