@@ -71,8 +71,8 @@ $ http POST "${es_host}:9200/${index}/_search" <<< \
                     "domain": "half-plus-two:8500",
                     "itemid_field": "itemId1",
                     "context": {
-                        "some-key": "some-value", 
-                        "another-key": "another-value"
+                        "some-key": ["some-value"], 
+                        "another-key": ["another-value"]
                     }
                 }
             }
@@ -85,7 +85,7 @@ Here is the definition of the parameters:
 * `name` - the name of the model. This is from the class you've implemented in the plugin
 * `domain` - the `domain:port` that the model is available on.
 * `itemid_field` - the field to use as the unique identifier for each item, this should be present in each document
-* `context` - the context for the query. Including all meaningful fields you care about
+* `context` - the context for the query. Including all meaningful fields you care about. They must be passed as lists of strings
 
 ES will run the rescore during the collection phase, after the scoring phase before
 returning to the master node for sorting. This allows each shard to run their own LRU
@@ -129,8 +129,8 @@ $ http POST 'localhost:9200/es-ml-rescore-plugin-test-index/_search' <<< \
                     "domain": "half-plus-two:8500",
                     "itemid_field": "itemId1",
                     "context": {
-                        "some-key": "some-value", 
-                        "another-key": "another-value"
+                        "some-key": ["some-value"], 
+                        "another-key": ["another-value"]
                     }
                 }
             }
