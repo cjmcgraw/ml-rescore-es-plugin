@@ -5,3 +5,5 @@ grpc_server/venv
 **/__pycache__/
 **/.idea
 **/.gradle
+**/.venv
+**/.virtualenv

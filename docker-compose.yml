@@ -1,30 +1,49 @@
-version: "3.8"
+# syntax=docker/docekrfile:1.2
+version: "3.3"
 
 services:
 
-  grpc-server:
-    build: ./grpc_server
-    volumes:
-      - ./grpc_server:/app/
-    ports:
-      - 50051:50051
-  
+  half-plus-three-model:
+    image: tensorflow/serving:2.4.1-devel
+    entrypoint:
+      tensorflow_model_server --port=8500 --rest_api_port=8501 --model_name=half_plus_three --model_base_path=/tensorflow-serving/tensorflow_serving/servables/tensorflow/testdata/saved_model_half_plus_three
+
+
+  half-plus-two-model:
+    image: tensorflow/serving:2.4.1-devel
+    entrypoint:
+      tensorflow_model_server --port=8500 --rest_api_port=8501 --model_name=half_plus_two --model_base_path=/tensorflow-serving/tensorflow_serving/servables/tensorflow/testdata/saved_model_half_plus_two_cpu
+
   es:
-    build:
-      dockerfile: ./es/Dockerfile
-      context: ./
-    environment:
-      discovery.type: single-node
-    volumes:
-      - ./es/plugin/build/distributions:/distributions
+    build: ./es
     ports:
       - 9200:9200
-      - 9300:9300
+    environment:
+      - discovery.type=single-node
+      - bootstrap.memory_lock=true
+      - "ES_JAVA_OPTS=-Xms8g -Xmx8g"
+    ulimits:
+      memlock:
+        soft: -1
+        hard: -1
+    volumes:
+      - ./es/plugin/build/distributions:/distributions
     depends_on:
-      - grpc-server
+      - half-plus-three-model
+      - half-plus-two-model
 
   tests:
     build: ./tests
     volumes:
       - ./tests:/app/
+    depends_on:
+     - es
+
+  benchmarking:
+    build: ./benchmarking/
+    volumes:
+      - ./benchmarking/:/app/
+    depends_on:
+      - es
+
 

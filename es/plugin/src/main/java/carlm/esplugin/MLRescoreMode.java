@@ -1,4 +1,4 @@
-package qarlm.esplugin;
+package carlm.esplugin;
 
 import org.elasticsearch.common.io.stream.StreamInput;
 import org.elasticsearch.common.io.stream.StreamOutput;
@@ -30,7 +30,7 @@ public enum MLRescoreMode implements Writeable {
            return "replace";
        }
     },
-    Total {
+    Sum {
         @Override
         public float combine(float primary, float secondary) {
             return primary + secondary;
@@ -41,7 +41,7 @@ public enum MLRescoreMode implements Writeable {
             return "sum";
         }
     },
-    Multiply {
+    Product {
         @Override
         public float combine(float primary, float secondary) {
             return primary * secondary;
@@ -50,6 +50,17 @@ public enum MLRescoreMode implements Writeable {
         @Override
         public String toString() {
             return "product";
+        }
+    },
+    Product1p {
+        @Override
+        public float combine(float primary, float secondary) {
+            return (primary + 1.0f) * secondary;
+        }
+
+        @Override
+        public String toString() {
+            return "product1p";
         }
     };
 

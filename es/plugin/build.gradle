@@ -1,9 +1,8 @@
 buildscript {
     ext {
         esVersion = '7.9.0'
-        grpcVersion = '1.31.1'
+        grpcVersion = '1.30.0'
         protobufVersion = '3.12.0'
-        protocVersion = protobufVersion
     }
 
     repositories {
@@ -13,13 +12,11 @@ buildscript {
 
     dependencies {
         classpath "org.elasticsearch.gradle:build-tools:${esVersion}"
-        classpath 'com.google.protobuf:protobuf-gradle-plugin:0.8.13'
     }
 }
 
 apply plugin: "java"
 apply plugin: "idea"
-apply plugin: "com.google.protobuf"
 apply plugin: "elasticsearch.esplugin"
 
 sourceCompatibility = 14
@@ -30,50 +27,53 @@ repositories {
     jcenter()
 }
 
-
 dependencies {
     configurations.all {
-        resolutionStrategy.force 'com.google.errorprone:error_prone_annotations:2.4.0'
+        resolutionStrategy.force 'com.google.guava:guava:29.0-android'
     }
-
+    compile group: 'org.apache.commons', name: 'commons-lang3', version: '3.11'
+    compile "com.timgroup:java-statsd-client:3.0.2"
+    compile "org.apache.commons:commons-math3:3.6.1"
+    compile "com.google.code.gson:gson:2.8.6"
     compile "io.grpc:grpc-protobuf:${grpcVersion}"
     compile "io.grpc:grpc-stub:${grpcVersion}"
     compile "com.google.protobuf:protobuf-java:${protobufVersion}"
-    compile 'info.picocli:picocli:4.5.0'
-    compile "org.apache.tomcat:annotations-api:6.0.53"
-    compile "org.elasticsearch:elasticsearch:${esVersion}"
     compile "com.google.protobuf:protobuf-java-util:${protobufVersion}"
     compile "io.grpc:grpc-netty-shaded:${grpcVersion}"
-    compile group: 'com.googlecode.protobuf-java-format', name: 'protobuf-java-format', version: '1.4'
-    compile 'com.github.ben-manes.caffeine:caffeine:2.8.5'
-}
+    compile 'info.picocli:picocli:4.5.0'
+    compile "io.opil:tensorflow-serving-client:2.2.0"
+    compile "org.apache.tomcat:annotations-api:6.0.53"
+    compile "org.elasticsearch:elasticsearch:${esVersion}"
 
-protobuf {
-    protoc { artifact = "com.google.protobuf:protoc:${protocVersion}" }
-    plugins {
-        grpc { artifact = "io.grpc:protoc-gen-grpc-java:${grpcVersion}" }
-    }
-    generateProtoTasks {
-        all()*.plugins {grpc {} }
-    }
-}
+    compile 'com.fasterxml.jackson.core:jackson-core:2.10.4'
+    compile 'com.fasterxml.jackson.core:jackson-annotations:2.10.4'
+    compile 'com.fasterxml.jackson.core:jackson-databind:2.10.4'
 
-sourceSets {
-    main {
-        java {
-            srcDirs 'build/generated/source/proto/main/grpc'
-            srcDirs 'build/generated/source/proto/main/java'
-        }
-    }
+    testImplementation "org.mockito:mockito-core:3.+"
+    testImplementation "net.bytebuddy:byte-buddy:1.10.20"
+    testImplementation "net.bytebuddy:byte-buddy-agent:1.10.20"
+    testImplementation "org.objenesis:objenesis:3.2"
+    testImplementation 'org.apiguardian:apiguardian-api:1.1.0'
+    testImplementation 'org.junit.jupiter:junit-jupiter-api:5.7.1'
+    testRuntime 'org.junit.jupiter:junit-jupiter-engine:5.7.1'
 }
 
 esplugin {
-    name 'ml-grpc-rescore'
+    name 'ml-rescore-v0'
     description 'Rescoring plugin for external grpc model'
-    classname 'qarlm.esplugin.MLGrpcRescoringPlugin'
+    classname 'carlm.esplugin.MLRescoringPlugin'
     licenseFile rootProject.file("LICENSE.txt")
     noticeFile rootProject.file("NOTICE.txt")
 }
+
+test {
+    useJUnitPlatform()
+    testLogging {
+        events "passed", "skipped", "failed"
+    }
+}
+
 checkstyleMain.onlyIf { false }
 checkstyleTest.onlyIf { false }
 javadoc.onlyIf { false }
+

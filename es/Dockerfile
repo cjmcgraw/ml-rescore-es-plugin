@@ -2,30 +2,34 @@ FROM openjdk:14 as builder
 
 LABEL maintainer="carlm@accretivetg.com"
 
-RUN mkdir -p /build
 WORKDIR /build
-
-COPY ./es/plugin/LICENSE.txt LICENSE.txt
-COPY ./es/plugin/NOTICE.txt NOTICE.txt
-COPY ./es/plugin/gradle gradle
-COPY ./es/plugin/gradlew gradlew
-COPY ./es/plugin/build.gradle build.gradle
-COPY ./es/plugin/settings.gradle settings.gradle
-COPY ./es/plugin/src src/
-RUN unlink src/main/proto || echo "no unlink needed"
-COPY ./protos/ src/main/proto/
+COPY ./plugin/LICENSE.txt LICENSE.txt
+COPY ./plugin/NOTICE.txt NOTICE.txt
+COPY ./plugin/gradle gradle
+COPY ./plugin/gradlew gradlew
+COPY ./plugin/build.gradle build.gradle
+COPY ./plugin/settings.gradle settings.gradle
+COPY ./plugin/src src/
 RUN ls -alR src/
 
-RUN ./gradlew \
+RUN --mount=type=cache,id=gradle_cache,target=/root/.gradle \
+        ./gradlew \
+        --no-daemon \
+        --parallel \
+        test
+
+RUN --mount=type=cache,id=gradle_cache,target=/root/.gradle \
+        ./gradlew \
         --no-daemon \
         --parallel \
         clean assemble
 
-FROM elasticsearch:7.9.0
-RUN mkdir /ml-grpc-rescore-plugin/
-COPY --from=builder /build/build/distributions/ml-grpc-rescore.zip /ml-grpc-rescore-plugin/
-RUN yes | bin/elasticsearch-plugin install file:///ml-grpc-rescore-plugin/ml-grpc-rescore.zip
-ADD ./es/data.tar.gz /usr/share/elasticsearch/
-RUN chown -R elasticsearch /usr/share/elasticsearch/data
-RUN ls -alR /usr/share/elasticsearch/data
+RUN ls -al /build/build/distributions/
 
+FROM scratch as plugin_files
+COPY --from=builder /build/build/distributions/ml-rescore-v0.zip /ml-rescore-v0.zip
+
+FROM elasticsearch:7.9.0
+RUN mkdir /ml-grcp-rescoring-esplugin/
+COPY --from=builder /build/build/distributions/ml-rescore-v0.zip /ml-rescoring-esplugin/
+RUN yes | bin/elasticsearch-plugin install file:///ml-rescoring-esplugin/ml-rescore-v0.zip
