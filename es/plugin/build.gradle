@@ -59,9 +59,10 @@ dependencies {
 }
 
 esplugin {
-    name 'mlrescore-v1'
+    name 'mlrescore-v2'
+    version "2.0.0"
     description 'Rescoring plugin for external grpc model'
-    classname 'carlm.esplugin.MLRescoringPlugin'
+    classname 'com.accretivetg.ml.esplugin.MLRescoringPlugin'
     licenseFile rootProject.file("LICENSE.txt")
     noticeFile rootProject.file("NOTICE.txt")
 }

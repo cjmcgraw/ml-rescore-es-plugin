@@ -58,7 +58,7 @@ done
 echo ""
 
 echo "deleteing benchmarking index, if it exists"
-curl --silent -XDELETE 'es:9200/benchmarking-index' > /dev/null
+curl --silent -XDELETE "${es_host}:9200/benchmarking-index" > /dev/null
 echo "ignore above errors if they occurred"
 echo ""
 echo "generating data to submit"
@@ -71,27 +71,41 @@ curl --fail --silent -XPOST "${es_host}:9200/benchmarking-index/_bulk" \
     --data-binary @benchmarking_documents.newline-delimited-json > /dev/null
 
 echo ""
+echo "cleaning up es bulk insert files..."
+rm -rf benchmarking_documents.newline-delimited-json
+echo "finished cleaning up files"
+
+echo ""
 echo "generating urls.txt for siege"
 python generate_urls.py
 echo "finished generating urls"
 
+echo ""
+echo "printing out siege configuration"
+siege --config
+echo "finished printing configuration"
+echo ""
+
 echo "running server siege on half-plus-two-model with unique requests"
 siege \
+    --reps=once \
+    --no-parse \
+    --no-follow \
     --content-type application/json \
     --concurrent 15 \
-    --file urls.txt \
-    --internet \
-    --benchmark \
-    --reps=once \
-    $@
+    --file urls.txt
 
 
 echo "running server siege on half-plus-two-model with cached requests"
 siege \
+    --reps=once \
+    --no-parse \
+    --no-follow \
     --content-type application/json \
     --concurrent 15 \
-    --file urls.txt \
-    --internet \
-    --benchmark \
-    --reps=once \
-    $@
+    --file urls.txt 
+
+echo "cleaning up urls.txt file"
+rm -rf urls.txt
+echo "finished cleaning up files"
+

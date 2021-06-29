@@ -15,7 +15,7 @@ if __name__ == '__main__':
     p = argparse.ArgumentParser()
     p.add_argument("--es-host", required=True)
     p.add_argument("--index", required=True)
-    p.add_argument("--model-domain", default="half-plus-two-model:8500")
+    p.add_argument("--model-domain", default="item_ranker:8500")
     args = p.parse_args()
     es_host = args.es_host
     index = args.index
@@ -29,13 +29,10 @@ if __name__ == '__main__':
                 "mlrescore-v1": {
                     "score_mode": "replace",
                     "type": "ranking",
-                    "name": "item_id_half_plus_two",
+                    "name": "item_ranker",
+                    "model_name": "item_ranker_testing_model",
                     "domain": model_domain,
                     "itemid_field": "itemId1",
-                    "context": {
-                        "query": ["abc"],
-                        "some-key": ["some-value"]
-                    },
                     **kwargs,
                 }
             }
@@ -45,6 +42,8 @@ if __name__ == '__main__':
         generate_request(domain="unknown:1234"),
         generate_request(name="unknown"),
         generate_request(type="unknown"),
+        generate_request(itemid_field="unknown"),
+        generate_request(model_name="unknown"),
         generate_request(itemid_field="unknown"),
         generate_request(score_mode="unknown"),
     ]

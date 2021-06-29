@@ -3,7 +3,7 @@ test_data_file="test_documents.newline-delimited-json"
 index="test-index"
 force_generate=""
 fill_index=""
-only_run="*"
+only_run="test_*"
 
 function usage() {
     echo "$0 args"
@@ -12,7 +12,7 @@ function usage() {
     echo "  --index           index to use (defaults=${index})"
     echo "  --force-generate  generate the data, even if the data file already exists"
     echo "  --fill-index      fill the data in the index, generate it if missing"
-    echo "  --only-run        regex of tests to run match test_${only_run}.py (default=*)"
+    echo "  --only-run        regex of tests to run match ${only_run}.py (default=*)"
 }
 
 while [ $# ];do case $1 in
@@ -173,12 +173,16 @@ if [[ ! -z "$fill_index" ]]; then
     fi
     echo "document counts match!"
     echo "finished filling ES index=${index}"
+    echo ""
+    echo "cleaning up resources for test data"
+    rm -rf "${test_data_file}"
+    echo "finished cleaning up resources"
 fi
 echo ""
 
 echo "starting testing"
 set -eu
-for test in $(find . -type f -name "test_$only_run.py" | grep -v 'test_helpers.py'); do
+for test in $(find . -type f -name "$only_run.py" | grep -v 'test_helpers.py'); do
     echo "running test: ${test}"
     cmd="python '${test}' --es-host '${es_host}' --index '${index}'"
     eval $cmd

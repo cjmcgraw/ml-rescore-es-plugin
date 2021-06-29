@@ -1,18 +1,16 @@
-# syntax=docker/docekrfile:1.2
 version: "3.3"
 
 services:
 
-  half-plus-three-model:
-    image: tensorflow/serving:2.4.1-devel
-    entrypoint:
-      tensorflow_model_server --port=8500 --rest_api_port=8501 --model_name=half_plus_three --model_base_path=/tensorflow-serving/tensorflow_serving/servables/tensorflow/testdata/saved_model_half_plus_three
+  item-ranker:
+    build: ./item_ranker
+    volumes:
+      - ./item_ranker:/app/
 
-
-  half-plus-two-model:
-    image: tensorflow/serving:2.4.1-devel
-    entrypoint:
-      tensorflow_model_server --port=8500 --rest_api_port=8501 --model_name=half_plus_two --model_base_path=/tensorflow-serving/tensorflow_serving/servables/tensorflow/testdata/saved_model_half_plus_two_cpu
+  contextual-item-ranker:
+    build: ./contextual_item_ranker
+    volumes:
+      - ./contextual_item_ranker:/app/
 
   es:
     build: ./es
@@ -29,8 +27,8 @@ services:
     volumes:
       - ./es/plugin/build/distributions:/distributions
     depends_on:
-      - half-plus-three-model
-      - half-plus-two-model
+      - item-ranker
+      - contextual-item-ranker
 
   tests:
     build: ./tests
