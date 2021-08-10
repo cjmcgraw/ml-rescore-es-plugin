@@ -13,9 +13,7 @@ import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.elasticsearch.ElasticsearchStatusException;
 import org.elasticsearch.rest.RestStatus;
-import org.tensorflow.framework.DataType;
 import org.tensorflow.framework.TensorProto;
-import org.tensorflow.framework.TensorShapeProto;
 import tensorflow.serving.*;
 import tensorflow.serving.Predict.PredictResponse;
 import tensorflow.serving.Predict.PredictRequest;
@@ -86,7 +84,17 @@ public class TensorflowServingGrpcClient {
         statsd.increment("connection.shutdown." + target);
         log.warn("shutting down connection to target={}", target);
         channel.enterIdle();
-        channel.shutdown();
+        channel.shutdownNow();
+        try {
+            boolean result = channel.awaitTermination(500L, TimeUnit.MILLISECONDS);
+            if (!result)  {
+                log.error("Failed to terminate gRPC connection in 500ms!");
+                throw new RuntimeException("Failed to terminate gRPC connection for unknwon reasons!");
+            }
+        } catch (InterruptedException exception) {
+            log.error("Failed to successfully terminate gRPC channel for unknown reason!");
+            throw new RuntimeException(exception);
+        }
     }
 
     protected Model.ModelSpec getModelSpec() {
@@ -172,6 +180,7 @@ public class TensorflowServingGrpcClient {
 
         long grpcCallTimeStart = System.currentTimeMillis();
         PredictRequest request = createRequest(inputs);
+        statsd.metric("request.bytes", request.getSerializedSize());
         PredictResponse response;
         try {
             response = AccessController.doPrivileged(
@@ -179,12 +188,23 @@ public class TensorflowServingGrpcClient {
                             .withDeadlineAfter(600, TimeUnit.MILLISECONDS)
                             .predict(request)
             );
+            statsd.increment("request.success");
+            statsd.metric("response.bytes", response.getSerializedSize());
+            if (response.getOutputsCount() <= 0) {
+                log.error("Failed to retrieve meaningful response from model! target={} model_name={}", target, modelName);
+                throw new BadModelResponseException(
+                        "Failed to find any meaningful response from model!",
+                        RestStatus.BAD_REQUEST
+                );
+            }
+            return response
+                    .getOutputsMap();
         } catch (StatusRuntimeException e) {
             Status grpcStatus = e.getStatus();
             if (grpcStatus.getCode() == Status.INVALID_ARGUMENT.getCode()) {
                 statsd.increment("request.invalid");
                 String msg = String.format("unknown argument given to target=%s", target);
-                throw new InvalidModelInputException(msg, RestStatus.BAD_REQUEST, e);
+                throw new InvalidModelInputException(msg, RestStatus.UNPROCESSABLE_ENTITY, e);
             }
             log.catching(e);
             statsd.increment("request.failure");
@@ -206,17 +226,9 @@ public class TensorflowServingGrpcClient {
                 closeConnection();
             }
             throw e;
+        } finally {
+            statsd.recordExecutionTime("request", System.currentTimeMillis() - grpcCallTimeStart);
         }
-        statsd.increment("request.success");
-        statsd.recordExecutionTime("request", System.currentTimeMillis() - grpcCallTimeStart);
-        if (response.getOutputsCount() <= 0) {
-            log.error("Failed to retrieve meaningful response from model! target={} model_name={}", target, modelName);
-            throw new BadModelResponseException(
-                    "Failed to find any meaningful response from model!",
-                    RestStatus.BAD_REQUEST
-            );
-        }
-        return response
-                .getOutputsMap();
+
     }
 }

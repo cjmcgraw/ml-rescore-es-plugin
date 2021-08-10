@@ -13,9 +13,9 @@ log.basicConfig(
 log.info(f"tensorflow version: {tf.__version__}")
 
 if __name__ == '__main__':
-    item_id = tf.keras.Input(shape=(None,), dtype=tf.string, name="item_id")
+    item_id = tf.keras.Input(shape=(None,), dtype=tf.float32, name="item_id")
     reshaped_item_id = tf.reshape(item_id, (-1, 1))
-    item_id_lengths = tf.strings.length(reshaped_item_id)
+    item_id_lengths = tf.math.floordiv(tf.math.log(reshaped_item_id), tf.math.log(10.0)) + 1
     multiplied_ids = math.e * tf.cast(item_id_lengths, tf.float32)
     scores = tf.reshape(multiplied_ids, (-1,))
 
@@ -24,16 +24,17 @@ if __name__ == '__main__':
         outputs=scores
     )
 
-    results = model.predict(["one", "two", "three", "four"])
+    results = model.predict([1, 10, 100, 1_000, 10_000, 100_000])
     print(results)
 
     input_signature = {
-        "item_id": tf.TensorSpec(shape=(None,), dtype=tf.string, name="item_id")
+        "item_id": tf.TensorSpec(shape=(None,), dtype=tf.uint32, name="item_id")
     }
 
     @tf.function(input_signature=[input_signature])
     def serving_fn(inputs: Dict[str, tf.Tensor]):
-        return {"scores": model(inputs['item_id'])}
+        data = tf.cast(inputs['item_id'], tf.float32)
+        return {"scores": model(data)}
 
     model.save(
         "model_dir",

@@ -5,8 +5,6 @@ import com.accretivetg.ml.esplugin.MLRescoreContext;
 import com.accretivetg.ml.esplugin.StatsD;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
 import org.elasticsearch.common.cache.Cache;
 import org.elasticsearch.common.cache.CacheBuilder;
 import org.elasticsearch.common.unit.TimeValue;
@@ -24,7 +22,8 @@ public class LRUCacheWrappedRanker implements MLModel {
                 CacheBuilder
                         .<String, Float>builder()
                         .setMaximumWeight(25_000_000)
-                        .setExpireAfterAccess(TimeValue.timeValueMinutes(30))
+                        .setExpireAfterWrite(TimeValue.timeValueHours(6))
+                        .setExpireAfterAccess(TimeValue.timeValueHours(2))
         );
     }
 

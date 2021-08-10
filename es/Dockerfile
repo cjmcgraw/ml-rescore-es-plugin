@@ -31,7 +31,7 @@ RUN ls -al /build/build/distributions/
 FROM scratch as plugin_files
 COPY --from=builder /build/build/distributions/mlrescore-v2.zip /mlrescore-v2.zip
 
-FROM elasticsearch:7.9.0
+FROM elasticsearch:7.9.2
 RUN mkdir /ml-grcp-rescoring-esplugin/
 COPY --from=builder /build/build/distributions/mlrescore-v2.zip /ml-rescoring-esplugin/
 RUN yes | bin/elasticsearch-plugin install file:///ml-rescoring-esplugin/mlrescore-v2.zip

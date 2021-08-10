@@ -13,35 +13,41 @@ public class StatsD {
     private static final Logger log = LogManager.getLogger(StatsD.class);
     private static Optional<StatsDClient> statsd = buildStatsDClient();
 
-    private String prefix;
+    private String prefix = "";
 
     public StatsD(String ...prefixes) {
-        prefix = String.join(".", prefixes);
+        appendPrefix(prefixes);
     }
 
     public void appendPrefix(String ...prefixes) {
-        prefix += "." + String.join(".", prefixes);
+        prefix += String.join(".", prefixes);
+        if (prefix.length() > 0 && prefixes.length > 0) {
+            prefix += ".";
+        }
     }
 
     public void gauge(String aspect, double value) {
-        statsd.ifPresent(s -> s.gauge(prefix + "." + aspect, value));
+        statsd.ifPresent(s -> s.gauge(prefix + aspect, value));
     }
 
     public void increment(String aspect) {
-        statsd.ifPresent(s -> s.increment(prefix + "." + aspect));
+        statsd.ifPresent(s -> s.increment(prefix + aspect));
     }
 
     public void count(String aspect, long delta) {
-        statsd.ifPresent(s -> s.count(prefix + "." + aspect, delta));
+        statsd.ifPresent(s -> s.count(prefix + aspect, delta));
+    }
 
+    public void metric(String aspect, long value) {
+        statsd.ifPresent(s -> s.time(prefix + aspect, value));
     }
 
     public void time(String aspect, long value) {
-        statsd.ifPresent(s -> s.time(prefix + "." + aspect, value));
+        statsd.ifPresent(s -> s.time(prefix + aspect, value));
     }
 
     public void recordExecutionTime(String aspect, long timeInMs) {
-        statsd.ifPresent(s -> s.recordExecutionTime(prefix + "." + aspect, timeInMs));
+        statsd.ifPresent(s -> s.recordExecutionTime(prefix + aspect, timeInMs));
     }
 
     private static Optional<StatsDClient> buildStatsDClient() {
@@ -49,7 +55,7 @@ public class StatsD {
             log.warn("setting up StatsdClient!");
             StatsDClient statsdClient = AccessController.doPrivileged(
                     (PrivilegedAction<StatsDClient>) () ->
-                new NonBlockingStatsDClient("ml.mlrescore-plugin.v1", "localhost", 8125)
+                new NonBlockingStatsDClient("ml.mlrescore-plugin.v2", "localhost", 8125)
             );
             return Optional.of(statsdClient);
         } catch (Exception error) {

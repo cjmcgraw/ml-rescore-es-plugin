@@ -29,6 +29,7 @@ services:
     depends_on:
       - item-ranker
       - contextual-item-ranker
+    command: ["elasticsearch", "-Elogger.level=INFO"]
 
   tests:
     build: ./tests

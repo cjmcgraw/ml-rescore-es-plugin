@@ -15,10 +15,6 @@ import org.elasticsearch.ElasticsearchStatusException;
 import org.elasticsearch.common.cache.CacheBuilder;
 import org.elasticsearch.common.unit.TimeValue;
 import org.elasticsearch.rest.RestStatus;
-import org.tensorflow.framework.TensorProto;
-import tensorflow.serving.Predict.PredictResponse;
-import tensorflow.serving.Predict.PredictRequest;
-
 
 import java.nio.charset.StandardCharsets;
 import java.util.List;
@@ -41,13 +37,17 @@ public class ContextualItemRanker extends TensorflowModelRanker implements MLMod
                 "uuid." + uuid
         );
         TensorflowServingGrpcClient client = new TensorflowServingGrpcClient(statsD, domain, modelName);
-        return new LRUCacheWrappedRanker(
-                new ContextualItemRanker(statsD, client),
+        MLModel ranker = new ContextualItemRanker(statsD, client);
+        MLModel cachedResultsRanker = new LRUCacheWrappedRanker(
+                ranker,
                 CacheBuilder
                     .<String, Float>builder()
                     .setMaximumWeight(75_000_000)
-                    .setExpireAfterWrite(TimeValue.timeValueMinutes(30))
+                    .setExpireAfterWrite(TimeValue.timeValueHours(6))
+                    .setExpireAfterAccess(TimeValue.timeValueHours(1))
         );
+        MLModel cachedInvalidContextRanker = new InvalidContextCacheWrappedRanker(cachedResultsRanker);
+        return cachedInvalidContextRanker;
     }
 
     ContextualItemRanker(

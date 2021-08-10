@@ -6,5 +6,7 @@ grpc_server/venv
 **/.idea
 **/.gradle
 **/.venv
-**/.virtualenv
-**/*.swp
+**/.virtualenv/
+*.swp
+**/model_dir/*
+

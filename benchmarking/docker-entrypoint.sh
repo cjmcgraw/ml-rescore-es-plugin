@@ -86,7 +86,7 @@ siege --config
 echo "finished printing configuration"
 echo ""
 
-echo "running server siege on half-plus-two-model with unique requests"
+echo "running server siege with non-cached requests"
 siege \
     --reps=once \
     --no-parse \
@@ -96,7 +96,7 @@ siege \
     --file urls.txt
 
 
-echo "running server siege on half-plus-two-model with cached requests"
+echo "running server siege with with cached requests"
 siege \
     --reps=once \
     --no-parse \

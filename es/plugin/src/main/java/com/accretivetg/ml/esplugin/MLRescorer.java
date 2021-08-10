@@ -13,7 +13,9 @@ import org.apache.lucene.search.ScoreDoc;
 import org.apache.lucene.search.TopDocs;
 import org.elasticsearch.ElasticsearchException;
 import org.elasticsearch.ElasticsearchParseException;
+import org.elasticsearch.ElasticsearchStatusException;
 import org.elasticsearch.index.fielddata.SortedBinaryDocValues;
+import org.elasticsearch.rest.RestStatus;
 import org.elasticsearch.search.rescore.RescoreContext;
 import org.elasticsearch.search.rescore.Rescorer;
 
@@ -22,20 +24,34 @@ import java.util.*;
 
 class MLRescorer implements Rescorer {
     private static final Logger log = LogManager.getLogger(MLRescorer.class);
+    private static final KillSwitch killswitch = new KillSwitch(new StatsD(), 0.1f);
     static final MLRescorer INSTANCE = new MLRescorer();
 
     @Override
     public TopDocs rescore(TopDocs topDocs, IndexSearcher searcher, RescoreContext rescoreContext) throws IOException, ElasticsearchParseException {
+        if (killswitch.isActive()) {
+            log.error("killswitch is currently active!");
+            ElasticsearchStatusException exception = new ElasticsearchStatusException(
+                    "Error rate exceeded acceptable limit. Killswitch active on all rescore attempts!",
+                    RestStatus.TOO_MANY_REQUESTS
+            );
+            log.error(exception);
+            throw exception;
+        }
+
+        TopDocs rescoredDocs;
         try {
-            return innerRescore(topDocs, searcher, rescoreContext);
+            rescoredDocs = innerRescore(topDocs, searcher, rescoreContext);
         } catch (InvalidModelInputException e) {
-            log.info("User provided invalid model inputs!");
-            log.error(e);
             throw e;
         } catch (Exception e) {
+            killswitch.incrementError();
             log.catching(e);
             throw e;
         }
+
+        killswitch.incrementSuccess();
+        return rescoredDocs;
     }
 
     private TopDocs innerRescore(TopDocs topDocs, IndexSearcher searcher, RescoreContext rescoreContext) throws IOException, ElasticsearchParseException {
@@ -54,7 +70,17 @@ class MLRescorer implements Rescorer {
         s.count("rescore.items", itemIds.size());
 
         long startScore = System.currentTimeMillis();
-        Map<String, Float> scores = model.getScores(mlContext, itemIds);
+        Map<String, Float> scores;
+        try {
+            scores = model.getScores(mlContext, itemIds);
+        } catch (InvalidModelInputException e) {
+            s.increment("rescore.invalid");
+            throw e;
+        } catch (Exception e) {
+            s.increment("rescore.failure");
+            throw e;
+        }
+
         s.count("rescore.scored-items", scores.size());
 
         for (int i = 0; i  < itemIds.size(); i++) {

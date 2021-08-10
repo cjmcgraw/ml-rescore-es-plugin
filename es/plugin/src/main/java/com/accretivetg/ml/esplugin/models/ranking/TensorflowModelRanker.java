@@ -1,14 +1,15 @@
 package com.accretivetg.ml.esplugin.models.ranking;
 
-import com.accretivetg.ml.esplugin.BadModelResponseException;
-import com.accretivetg.ml.esplugin.MLRescoreContext;
-import com.accretivetg.ml.esplugin.StatsD;
+import com.accretivetg.ml.esplugin.*;
 import com.accretivetg.ml.esplugin.models.MLModel;
 import com.accretivetg.ml.esplugin.models.TensorflowServingGrpcClient;
 import com.accretivetg.ml.esplugin.models.Utils;
 import com.google.common.collect.Maps;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
+import org.elasticsearch.common.cache.Cache;
+import org.elasticsearch.common.cache.CacheBuilder;
+import org.elasticsearch.common.unit.TimeValue;
 import org.elasticsearch.rest.RestStatus;
 import org.tensorflow.framework.TensorProto;
 
@@ -41,6 +42,7 @@ abstract public class TensorflowModelRanker implements MLModel {
 
     @Override
     public Map<String, Float> getScores(MLRescoreContext context, List<String> itemIds) {
+        String contextHash = getContextHash(context);
         Map<String, TensorProto> inputs = createInput(context, itemIds);
         Map<String, TensorProto> outputs = this.client.runPrediction(inputs);
         List<Float> itemScores = processOutput(outputs);
@@ -64,9 +66,10 @@ abstract public class TensorflowModelRanker implements MLModel {
     }
 
     protected Map<String, TensorProto> createInput(MLRescoreContext context, List<String> items) {
+        ItemIdDataType itemIdDataType = context.getItemIdDataType();
         Map<String, List<String>> modelContextData = context.getModelContext();
         Map<String, TensorProto> inputs = Utils.Protobuf.contextToContextProtos(modelContextData);
-        inputs.put(itemIdKey, Utils.Protobuf.listToTensorProto(items));
+        inputs.put(itemIdKey, Utils.Protobuf.listToTensorProto(itemIdDataType, items));
         return inputs;
     }
 

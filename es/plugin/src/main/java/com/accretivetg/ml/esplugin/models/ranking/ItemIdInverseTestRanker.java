@@ -40,7 +40,7 @@ public class ItemIdInverseTestRanker implements MLModel {
         Map<String, Float> scores = Maps.newHashMapWithExpectedSize(itemIds.size());
         for (String item : itemIds) {
             Long itemId = Long.parseLong(item);
-            scores.put(item, (float) 1.0 / itemId);
+            scores.put(item, (float) (Math.round(1.0 / itemId * 1e8) / 1e8));
         }
 
         return scores;

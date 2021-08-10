@@ -182,11 +182,11 @@ pipeline {
         stage('build image files') {
             steps {
                 script {
-                    (DOCKER_IMAGE, DOCKER_LATEST_IMAGE) = buildDockerImage(
+                    (DOCKER_IMAGE, DOCKER_BRANCH_IMAGE) = buildDockerImage(
                         target: "plugin_files",
                         dockerContext: "./es/",
                         dockerFile: "./es/Dockerfile",
-                        additionalTags: [] ? env.BRANCH_NAME != "master" : ["latest"]
+                        additionalTags: [env.BRANCH_NAME == 'master' ? "latest" : env.BRANCH_NAME]
                     )
 
                     String containerName = sh(
@@ -201,7 +201,7 @@ pipeline {
                     )
 
                     pushToDockerRegistry(
-                        dockerImage: DOCKER_LATEST_IMAGE
+                        dockerImage: DOCKER_BRANCH_IMAGE
                     )
 
                     pushToTarpit(

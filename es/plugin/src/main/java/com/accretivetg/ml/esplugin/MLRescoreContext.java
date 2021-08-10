@@ -17,6 +17,7 @@ public class MLRescoreContext extends RescoreContext {
     private final String name;
     private final String modelName;
     private final String domain;
+    private final ItemIdDataType itemIdDataType;
     private final IndexFieldData<?> itemIdField;
     private final MLRescoreMode scoreMode;
     private final Map<String, List<String>> modelContext;
@@ -29,6 +30,7 @@ public class MLRescoreContext extends RescoreContext {
             String name,
             String modelName,
             String domain,
+            ItemIdDataType itemIdDataType,
             @Nullable
             IndexFieldData<?> itemIdField,
             Map<String, List<String>> unprocessedModelContext,
@@ -53,6 +55,7 @@ public class MLRescoreContext extends RescoreContext {
         this.type = type.toLowerCase();
         this.name = name.toLowerCase();
         this.domain = domain;
+        this.itemIdDataType = itemIdDataType;
         this.itemIdField = itemIdField;
         this.scoreMode = scoreMode;
         this.modelName = modelName;
@@ -80,6 +83,10 @@ public class MLRescoreContext extends RescoreContext {
 
     public IndexFieldData<?> getItemIdField() {
         return itemIdField;
+    }
+
+    public ItemIdDataType getItemIdDataType() {
+        return itemIdDataType;
     }
 
     public String getModelName(){

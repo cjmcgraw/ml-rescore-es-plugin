@@ -35,6 +35,7 @@ public class MLRescorerBuilder extends RescorerBuilder<MLRescorerBuilder>{
     private final String name;
     private final String modelName;
     private final String domain;
+    private ItemIdDataType itemIdDataType;
     private final String itemIdField;
     private final Map<String, List<String>> modelContext;
     private MLRescoreMode scoreMode = MLRescoreMode.Product1p;
@@ -44,6 +45,7 @@ public class MLRescorerBuilder extends RescorerBuilder<MLRescorerBuilder>{
             String name,
             String modelName,
             String domain,
+            @Nullable String itemIdDataType,
             String itemIdField,
             Map<String, List<String>> modelContext,
             @Nullable String rescoreMode
@@ -52,6 +54,9 @@ public class MLRescorerBuilder extends RescorerBuilder<MLRescorerBuilder>{
         this.name = name;
         this.domain = domain;
         this.modelName = modelName;
+        if (itemIdDataType != null) {
+            this.itemIdDataType = ItemIdDataType.fromString(itemIdDataType);
+        }
         this.itemIdField = itemIdField;
         this.modelContext = modelContext;
         if (rescoreMode != null) {
@@ -65,6 +70,7 @@ public class MLRescorerBuilder extends RescorerBuilder<MLRescorerBuilder>{
         name = in.readString();
         modelName = in.readString();
         domain = in.readString();
+        itemIdDataType = ItemIdDataType.readFromStream(in);
         itemIdField = in.readString();
         scoreMode = MLRescoreMode.readFromStream(in);
 
@@ -84,6 +90,7 @@ public class MLRescorerBuilder extends RescorerBuilder<MLRescorerBuilder>{
         out.writeString(name);
         out.writeString(modelName);
         out.writeString(domain);
+        itemIdDataType.writeTo(out);
         out.writeString(itemIdField);
         scoreMode.writeTo(out);
         out.writeInt(modelContext.size());
@@ -107,6 +114,7 @@ public class MLRescorerBuilder extends RescorerBuilder<MLRescorerBuilder>{
     private static final ParseField NAME = new ParseField("name");
     private static final ParseField MODEL_NAME = new ParseField("model_name");
     private static final ParseField DOMAIN = new ParseField("domain");
+    private static final ParseField ITEMID_DATA_TYPE = new ParseField("itemid_datatype");
     private static final ParseField ITEMID_FIELD = new ParseField("itemid_field");
     private static final ParseField CONTEXT = new ParseField("context");
     private static final ParseField SCORE_MODE = new ParseField("score_mode");
@@ -116,6 +124,7 @@ public class MLRescorerBuilder extends RescorerBuilder<MLRescorerBuilder>{
         builder.field(NAME.getPreferredName(), name);
         builder.field(MODEL_NAME.getPreferredName(), modelName);
         builder.field(DOMAIN.getPreferredName(), domain);
+        builder.field(ITEMID_DATA_TYPE.getPreferredName(), itemIdDataType.name().toLowerCase(Locale.ROOT));
         builder.field(ITEMID_FIELD.getPreferredName(), itemIdField);
         builder.startObject(CONTEXT.getPreferredName());
         builder.map(modelContext);
@@ -162,11 +171,13 @@ public class MLRescorerBuilder extends RescorerBuilder<MLRescorerBuilder>{
         }
 
         String scoreMode = (String) data.getOrDefault("score_mode", MLRescoreMode.Product1p.name());
+        String itemIdDataType = (String) data.getOrDefault("itemid_datatype", ItemIdDataType.INT64.name());
         return new MLRescorerBuilder(
                 type,
                 name,
                 modelName,
                 domain,
+                itemIdDataType,
                 itemIdField,
                 modelContext,
                 scoreMode
@@ -185,6 +196,7 @@ public class MLRescorerBuilder extends RescorerBuilder<MLRescorerBuilder>{
                         && Objects.equals(name, other.name)
                         && Objects.equals(modelName, other.modelName)
                         && Objects.equals(domain, other.domain)
+                        && Objects.equals(itemIdDataType, other.itemIdDataType)
                         && Objects.equals(itemIdField, other.itemIdField)
                         && Objects.equals(modelContext, other.modelContext)
                         && Objects.equals(scoreMode, other.scoreMode)
@@ -199,6 +211,7 @@ public class MLRescorerBuilder extends RescorerBuilder<MLRescorerBuilder>{
                 name,
                 modelName,
                 domain,
+                itemIdDataType,
                 itemIdField,
                 modelContext,
                 scoreMode
@@ -218,6 +231,7 @@ public class MLRescorerBuilder extends RescorerBuilder<MLRescorerBuilder>{
                 name,
                 modelName,
                 domain,
+                itemIdDataType,
                 context.getForField(fieldType),
                 modelContext,
                 scoreMode

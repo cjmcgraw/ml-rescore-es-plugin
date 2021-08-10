@@ -2,6 +2,7 @@
 from uuid import uuid4 as uuid
 import argparse
 import requests as r
+from requests_toolbelt.utils import dump
 import logging as log
 import random
 import string
@@ -39,42 +40,23 @@ if __name__ == '__main__':
                             "itemid_datatype": "string",
                             "itemid_field": itemid_field,
                             "context": {
-                                "key1": ["abcdefghijklmnopqrstuvwxyz"],
-                                "key2": ["1234567890"],
-                                "key3": ["!@#$%^&*()_+"],
-                                "key4": ["{}[]\\|;:\"',./<>?"],
+                                "key5": ["{}[]\\|;:\"',./<>?"],
                             },
                         },
                     },
                 },
             )
 
-            context_values_length = 26 + 10 + 12 + 16
+            assert response.status_code == 422, f"""
+            Expected a 422 (Unprocessable Entity) status code when the context
+            is known invalid. 
 
-            def get_expected_score(record):
-                return (len(str(record[itemid_field])) + context_values_length) * math.pi
+            status_code:
+            {response.status_code}
 
-            helpers.check_request_okay(response)
+            dump:
+            {dump.dump_all(response).decode('utf-8')}
 
-            raw_data = response.json()['hits']['hits']
-            data = [r['_source'] for r in raw_data]
-            names = [r['name'] for r in data]
-            assert all(
-                [n.lower().startswith(v) for n in names]
-            ), f"queried name didn't start with {v}"
-
-            actualScores = [round(r['_score'], 4) for r in raw_data]
-            expectedScores = [round(float(get_expected_score(r)), 4)  for r in data]
-            assert all(x == y for x, y in zip(expectedScores, actualScores)), f"""
-                Failed to assert that the scores were the expected item id inversed
-
-                expectedScores:
-                {expectedScores}
-
-                actualScores:
-                {actualScores}
             """
-
-
 
 

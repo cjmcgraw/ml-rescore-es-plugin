@@ -36,6 +36,7 @@ if __name__ == '__main__':
                             "name": "item_ranker",
                             "model_name": "item_ranker_testing_model",
                             "domain": model_domain,
+                            "itemid_datatype": "uint32",
                             "itemid_field": itemid_field,
                         },
                     },
@@ -52,7 +53,8 @@ if __name__ == '__main__':
             ), f"queried name didn't start with {v}"
 
             def get_expected_score(record):
-                return len(str(record[itemid_field])) * math.e
+                return (math.floor(math.log(record[itemid_field], 10)) + 1) * math.e
+
 
             actualScores = [round(r['_score'], 4) for r in raw_data]
             expectedScores = [round(float(get_expected_score(r)), 4)  for r in data]
