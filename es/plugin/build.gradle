@@ -1,6 +1,6 @@
 buildscript {
     ext {
-        esVersion = '7.9.0'
+        esVersion = '7.9.2'
         grpcVersion = '1.30.0'
         protobufVersion = '3.12.0'
     }
